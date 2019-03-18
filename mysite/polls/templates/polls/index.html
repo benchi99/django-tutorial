@@ -1,0 +1,9 @@
+{% if lista_preguntas_recientes %}
+    <ul>
+        {% for q in lista_preguntas_recientes %}
+            <li><a href="{% url 'polls:Detalle' q.id%}"> {{ q.texto_pregunta}} </a> </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>No hay preguntas disponibles.</p>
+{% endif %}
