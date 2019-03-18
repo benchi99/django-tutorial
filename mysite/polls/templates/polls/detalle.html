@@ -1,8 +1,27 @@
+<!-- PARTE 3 -->
+
 <!-- {{ pregunta }} -->
 
+<!--
 <h1> {{ pregunta.texto_pregunta }} </h1>
 <ul>
 {% for eleccion in pregunta.eleccion_set.all %}
     <li>{{ eleccion.texto_eleccion }}</li>
 {% endfor %}
 </ul>
+-->
+
+<!-- PARTE 4 -->
+
+<h1> {{pregunta.texto_pregunta}} </h1>
+
+{% if error_message %}<p><strong>{{ error_message }}</strong></p> {% endif %}
+
+<form action="{% url 'polls:Voto' pregunta.id%}" method="POST">
+{% csrf_token %} <!-- TODO FORM POR POST DEBE LLEVAR ESTE TOKEN -->
+{% for eleccion in pregunta.eleccion_set.all %}
+    <input type="radio" name="eleccion" id="eleccion{{ forloop.counter }}" value="{{eleccion.id}}">
+    <label for="choice{{forloop.counter}}">{{eleccion.texto_eleccion}}</label><br>
+{% endfor %}
+    <input type="submit" value="Votar">
+</form>

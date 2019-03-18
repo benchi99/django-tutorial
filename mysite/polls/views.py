@@ -1,9 +1,10 @@
 from django.shortcuts import render
-from django.http import HttpResponse, Http404
+from django.http import HttpResponse, Http404, HttpResponseRedirect
 from django.template import loader
-from django.shortcuts import render #, get_object_or_404
+from django.shortcuts import render , get_object_or_404
+from django.urls import reverse
 
-from .models import Pregunta
+from .models import Pregunta, Eleccion
 
 def index(request):
     # Tutorial 2
@@ -35,5 +36,19 @@ def resultados(request, id_pregunta):
     return HttpResponse(response % id_pregunta)
 
 def voto(request, id_pregunta):
-    return HttpResponse("Estás votando la pregunta %s." % id_pregunta)
-
+    # Tutorial 2
+    # return HttpResponse("Estás votando la pregunta %s." % id_pregunta)
+    q = get_object_or_404(Pregunta, pk=id_pregunta)
+    try:
+        eleccion_usuario = q.eleccion_set.get(pk=request.POST['eleccion'])
+    except(KeyError, Eleccion.DoesNotExist):
+        # Muestra de nuevo el formulario.
+        return render(request, 'polls/detalle.html', {
+            'pregunta': q,
+            'error_message': "No has escogido nada."
+        })
+    else:
+        eleccion_usuario.votos += 1
+        eleccion_usuario.save()
+        return HttpResponseRedirect(reverse('polls:Resultados', args=(q.id,)))
+    # CONTINUAR LUEGO/MAÑANA.
