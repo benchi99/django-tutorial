@@ -17,6 +17,11 @@ class Pregunta(models.Model):
         ahora = timezone.now()
         return ahora - datetime.timedelta(days=1) <= self.fecha_publicacion <= ahora
 
+    ha_sido_publicado_recientemente.admin_order_field = 'fecha_publicacion'
+    ha_sido_publicado_recientemente.boolean = True
+    ha_sido_publicado_recientemente.short_description = '¿Ha sido publicado recientemente?'
+
+
 class Eleccion(models.Model):
 
     pregunta = models.ForeignKey(Pregunta, on_delete=models.CASCADE)
