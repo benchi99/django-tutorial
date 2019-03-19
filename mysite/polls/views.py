@@ -1,4 +1,5 @@
 from django.http import HttpResponseRedirect # , HttpResponse, Http404
+from django.utils import timezone
 # from django.template import loader
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
@@ -46,12 +47,21 @@ class IndexView(generic.ListView):
 
     def get_queryset(self):
         # Devuelve las últimas cinco preguntas
-        return Pregunta.objects.order_by('-fecha_publicacion') [:5]
+        # Tutorial 4
+        # return Pregunta.objects.order_by('-fecha_publicacion') [:5]
+        # Devuelve las últimas cinco preguntas (sin incluir las que están en el futuro.)
+        return Pregunta.objects.filter(fecha_publicacion__lte = timezone.now()).order_by('-fecha_publicacion')[:5]
+
 
 class DetalleView(generic.DetailView):
     model = Pregunta
     template_name = 'polls/detalle.html'
 
+    # Y si...
+    def get_queryset(self):
+        # Devuelve pregunta si está realizada en el pasado.
+        return Pregunta.objects.filter(fecha_publicacion__lte = timezone.now()).order_by('-fecha_publicacion')
+    
 class ResultadosView(generic.DetailView):
     model = Pregunta
     template_name = 'polls/resultado.html'

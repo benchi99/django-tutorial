@@ -12,8 +12,10 @@ class Pregunta(models.Model):
         return self.texto_pregunta
     
     def ha_sido_publicado_recientemente(self):
-        return self.fecha_publicacion >= timezone.now() - datetime.timedelta(days = 1)
-
+        # Tutorial 2 
+        # return self.fecha_publicacion >= timezone.now() - datetime.timedelta(days = 1)
+        ahora = timezone.now()
+        return ahora - datetime.timedelta(days=1) <= self.fecha_publicacion <= ahora
 
 class Eleccion(models.Model):
 
