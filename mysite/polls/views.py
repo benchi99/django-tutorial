@@ -1,11 +1,12 @@
-from django.shortcuts import render
-from django.http import HttpResponse, Http404, HttpResponseRedirect
-from django.template import loader
-from django.shortcuts import render , get_object_or_404
+from django.http import HttpResponseRedirect # , HttpResponse, Http404
+# from django.template import loader
+from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
+from django.views import generic
 
 from .models import Pregunta, Eleccion
 
+""" TUTORIAL 3
 def index(request):
     # Tutorial 2
     # return HttpResponse("Hola mundo. Este es el índice de la aplicación Polls.")
@@ -32,8 +33,28 @@ def detalle(request, id_pregunta):
     # return render(request, 'polls/detalle.html', {'pregunta': q})
 
 def resultados(request, id_pregunta):
-    response = "Estás mirando los resultados de la pregunta %s."
-    return HttpResponse(response % id_pregunta)
+    # Tutorial 2
+    # response = "Estás mirando los resultados de la pregunta %s."
+    # return HttpResponse(response % id_pregunta)
+    q = get_object_or_404(Pregunta, pk=id_pregunta)
+    return render(request, 'polls/resultado.html', {'pregunta': q})
+"""
+
+class IndexView(generic.ListView):
+    template_name = 'polls/index.html'
+    context_object_name = 'lista_preguntas_recientes'
+
+    def get_queryset(self):
+        # Devuelve las últimas cinco preguntas
+        return Pregunta.objects.order_by('-fecha_publicacion') [:5]
+
+class DetalleView(generic.DetailView):
+    model = Pregunta
+    template_name = 'polls/detalle.html'
+
+class ResultadosView(generic.DetailView):
+    model = Pregunta
+    template_name = 'polls/resultado.html'
 
 def voto(request, id_pregunta):
     # Tutorial 2
@@ -51,4 +72,3 @@ def voto(request, id_pregunta):
         eleccion_usuario.votos += 1
         eleccion_usuario.save()
         return HttpResponseRedirect(reverse('polls:Resultados', args=(q.id,)))
-    # CONTINUAR LUEGO/MAÑANA.
