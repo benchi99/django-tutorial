@@ -12,10 +12,11 @@ class PreguntaAdmin(admin.ModelAdmin):
     fieldsets = [
         (None,                      {'fields': ['texto_pregunta']}),
         ('Información de fecha',    {'fields': ['fecha_publicacion'], 'classes': ['collapse']}),
+        (None,                      {'fields': ['favorita']}),
     ]
     inlines = [ChoiceInLine]
     # Formato en el que se muestra la lista de preguntas
-    list_display = ('texto_pregunta', 'fecha_publicacion', 'ha_sido_publicado_recientemente')
+    list_display = ('texto_pregunta', 'fecha_publicacion', 'ha_sido_publicado_recientemente', 'favorita')
     # Campos por los que se puede filtrar la lista.
     list_filter = ['fecha_publicacion']
     # Campos por los que se puede buscar.

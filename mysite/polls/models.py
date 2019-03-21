@@ -2,15 +2,17 @@ import datetime
 
 from django.db import models
 from django.utils import timezone
+from django.urls import reverse
 
 class Pregunta(models.Model):
 
     texto_pregunta = models.CharField(max_length=200)
     fecha_publicacion = models.DateTimeField('Fecha de publicación')
+    favorita = models.BooleanField('Favorito', default=False)
     
     def __str__(self):
         return self.texto_pregunta
-    
+
     def ha_sido_publicado_recientemente(self):
         # Tutorial 2 
         # return self.fecha_publicacion >= timezone.now() - datetime.timedelta(days = 1)

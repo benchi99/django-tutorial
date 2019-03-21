@@ -4,5 +4,7 @@
     <li> {{ eleccion.texto_eleccion }} -- {{ eleccion.votos}} voto{{ eleccion.votos|pluralize }}</li>
     {% endfor %}
 </ul>
-
+<br>
 <a href="{% url 'polls:Detalle' pregunta.id %}">¿Votar de nuevo?</a>
+<br>
+<a href="{% url 'polls:Exportar' pregunta.id %}">Exportar resultados actuales a PDF.</a>

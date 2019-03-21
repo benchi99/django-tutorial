@@ -15,5 +15,7 @@ urlpatterns = [
     # path('<int:id_pregunta>/resultados/', views.resultados, name='Resultados'),
     path('<int:pk>/resultados/', views.ResultadosView.as_view(), name='Resultados'),
     # URL => /polls/id/voto
-    path('<int:id_pregunta>/voto/', views.voto, name='Voto')
+    path('<int:id_pregunta>/voto/', views.voto, name='Voto'),
+    # URL => /polls/id/voto/exportar
+    path('<int:id_pregunta>/voto/exportar', views.exportarVotos, name='Exportar')
 ]

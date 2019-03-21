@@ -1,9 +1,16 @@
-from django.http import HttpResponseRedirect # , HttpResponse, Http404
+import io
+from django.http import HttpResponseRedirect, FileResponse , HttpResponse # , Http404
 from django.utils import timezone
 # from django.template import loader
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 from django.views import generic
+from .reports import generaInformeResultado
+import datetime
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.units import inch
+
 
 from .models import Pregunta, Eleccion
 
@@ -41,6 +48,7 @@ def resultados(request, id_pregunta):
     return render(request, 'polls/resultado.html', {'pregunta': q})
 """
 
+# Vista índice.
 class IndexView(generic.ListView):
     template_name = 'polls/index.html'
     context_object_name = 'lista_preguntas_recientes'
@@ -52,20 +60,41 @@ class IndexView(generic.ListView):
         # Devuelve las últimas cinco preguntas (sin incluir las que están en el futuro.)
         return Pregunta.objects.filter(fecha_publicacion__lte = timezone.now()).order_by('-fecha_publicacion')[:5]
 
-
+# Vista de detalle.
 class DetalleView(generic.DetailView):
     model = Pregunta
     template_name = 'polls/detalle.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        fav = request.GET.get('fav', '').lower()
+        if fav == 'true':
+            actualizarFav(True, **kwargs)
+        elif fav == 'false':
+            actualizarFav(False, **kwargs)
+        return super(DetalleView, self).dispatch(request, *args, **kwargs)
 
     # Y si...
     def get_queryset(self):
         # Devuelve pregunta si está realizada en el pasado.
         return Pregunta.objects.filter(fecha_publicacion__lte = timezone.now()).order_by('-fecha_publicacion')
-    
+
+#Vista del resultado.
 class ResultadosView(generic.DetailView):
     model = Pregunta
     template_name = 'polls/resultado.html'
 
+# Actualiza el campo favorito de la pregunta.
+def actualizarFav(valor, **kwargs):
+    """
+    No hago uso de get_object_or_404 ya que en un principio
+    se tiene que haber accedido ya de por si al detalle de 
+    una pregunta.
+    """
+    q = Pregunta.objects.get(pk = kwargs['pk'])
+    q.favorita = valor
+    q.save()
+
+# Vista que realiza el voto.
 def voto(request, id_pregunta):
     # Tutorial 2
     # return HttpResponse("Estás votando la pregunta %s." % id_pregunta)
@@ -82,3 +111,66 @@ def voto(request, id_pregunta):
         eleccion_usuario.votos += 1
         eleccion_usuario.save()
         return HttpResponseRedirect(reverse('polls:Resultados', args=(q.id,)))
+
+"""
+Vista que va a exportar los datos actuales de la 
+votación a un informe PDF.
+"""
+
+def exportarVotos(request, id_pregunta):
+    """
+    q = get_object_or_404(Pregunta, pk = id_pregunta)
+
+    bff = io.BytesIO()
+
+    pdf = canvas.Canvas(bff, A4)
+    texto = pdf.beginText()
+
+    texto.setTextOrigin(inch, inch*4.5)
+    texto.setFont("Helvetica-Bold", 24)
+    texto.textLine(q.texto_pregunta)
+
+    texto.setFont("Courier", 14)
+    texto.textLine()
+
+    for e in q.eleccion_set.all():
+        texto.textLine(e.texto_eleccion + '-' + str(e.votos))    
+
+    pdf.drawText(texto)
+
+    pdf.showPage()
+    pdf.save()
+
+    
+    # return FileResponse(generaInformeResultado(q), as_attachment=True, filename='reporte_resultados_pregunta_' + str(q.pk) + '.pdf')
+    return FileResponse(bff, as_attachment=True, filename='reporte_resultados_pregunta_' + str(q.pk) + '.pdf')
+    """
+    q = get_object_or_404(Pregunta, pk = id_pregunta)
+    
+    # Se crea un objeto HttpResponse con los encabezados PDF.
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="reporte_resultado-pregunta'+str(q.pk)+'.pdf"'
+
+    # Se construye el objeto PDF, utilizando el objeto respuesta como archivo.
+    # Librería de generación de PDFs: ReportLab.
+    pdf = canvas.Canvas(response)
+    pdf.translate(inch, inch)
+    texto = pdf.beginText()
+
+    texto.setTextOrigin(inch, inch)
+    texto.setFont("Helvetica-Bold", 24)
+    texto.textLine(q.texto_pregunta)
+
+    texto.setFont("Courier", 14)
+    texto.textLine()
+
+    for e in q.eleccion_set.all():
+        texto.textLine(e.texto_eleccion + ' - ' + str(e.votos) + ' votos.')    
+
+    pdf.drawText(texto)
+
+    # Ya construido el objeto, se cierra y devuelve.
+    pdf.showPage()
+    pdf.save()
+
+    return response

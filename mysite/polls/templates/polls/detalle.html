@@ -1,3 +1,5 @@
+{% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'polls/detalle_style.css'%}">
 <!-- PARTE 3 -->
 
 <!-- {{ pregunta }} -->
@@ -14,6 +16,18 @@
 <!-- PARTE 4 -->
 
 <h1> {{pregunta.texto_pregunta}} </h1>
+<br>
+
+<form action="{% url 'polls:Detalle' pregunta.id%}" method="GET">
+<!-- {% csrf_token %} -->
+{% if pregunta.favorita %}
+    <input type="hidden" name="fav" value="false">
+    <input type="submit" value="Quitar de favoritos">
+{% else %}
+    <input type="hidden" name="fav" value="true">
+    <input type="submit" value="Añadir a favoritos">
+{% endif %}
+</form>
 
 {% if error_message %}<p><strong>{{ error_message }}</strong></p> {% endif %}
 
@@ -23,5 +37,10 @@
     <input type="radio" name="eleccion" id="eleccion{{ forloop.counter }}" value="{{eleccion.id}}">
     <label for="choice{{forloop.counter}}">{{eleccion.texto_eleccion}}</label><br>
 {% endfor %}
+    <br>
     <input type="submit" value="Votar">
 </form>
+<br>
+<br>
+
+<a href= "{% url 'polls:index' %}" class="volver"> Volver al índice </a>

@@ -1,12 +1,29 @@
 {% load static %}
 <link rel="stylesheet" type="text/css" href="{% static 'polls/style.css' %}">
 
-{% if lista_preguntas_recientes %}
-    <ul>
-        {% for q in lista_preguntas_recientes %}
-            <li><a href="{% url 'polls:Detalle' q.id%}"> {{ q.texto_pregunta}} </a> </li>
-        {% endfor %}
-    </ul>
+<h1>APLICACIÓN /POLLS/</h1>
+
+<p>Lista de preguntas disponibles</p>
+
+{% if request.GET.fav %}
+    {% if lista_preguntas_recientes %}
+            {% for q in lista_preguntas_recientes %}
+                {% if q.favorita %}
+                    <p><a href="{% url 'polls:Detalle' q.id%}"> {{ q.texto_pregunta}} </a> </lp
+                {% endif %}
+            {% endfor %}
+        <a href="{% url 'polls:index'%}">Mostrar todo</a>
+    {% else %}
+        <p>No hay preguntas disponibles.</p>
+        <a href="{% url 'polls:index'%}">Mostrar todo</a>
+    {% endif %}
 {% else %}
-    <p>No hay preguntas disponibles.</p>
+    {% if lista_preguntas_recientes %}
+            {% for q in lista_preguntas_recientes %}
+                <p><a href="{% url 'polls:Detalle' q.id%}"> {{ q.texto_pregunta}} </a> </p>
+            {% endfor %}
+        <a href="{% url 'polls:index'%}?fav=true">Mostrar favoritos</a>
+    {% else %}
+        <p>No hay preguntas disponibles.</p>
+    {% endif %}
 {% endif %}
