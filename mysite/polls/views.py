@@ -1,5 +1,5 @@
 import io
-from django.http import HttpResponseRedirect, FileResponse , HttpResponse # , Http404
+from django.http import HttpResponseRedirect, HttpResponse # , Http404
 from django.utils import timezone
 # from django.template import loader
 from django.shortcuts import render, get_object_or_404
@@ -10,7 +10,6 @@ import datetime
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import inch
-
 
 from .models import Pregunta, Eleccion
 
@@ -85,10 +84,9 @@ class ResultadosView(generic.DetailView):
 
 # Actualiza el campo favorito de la pregunta.
 def actualizarFav(valor, **kwargs):
-    """
-    No hago uso de get_object_or_404 ya que en un principio
-    se tiene que haber accedido ya de por si al detalle de 
-    una pregunta.
+    """"
+    No get_object_or_404 ya que en un principio se ha
+    accedido ya de por si al detalle de una pregunta de antemano.
     """
     q = Pregunta.objects.get(pk = kwargs['pk'])
     q.favorita = valor
@@ -112,39 +110,13 @@ def voto(request, id_pregunta):
         eleccion_usuario.save()
         return HttpResponseRedirect(reverse('polls:Resultados', args=(q.id,)))
 
-"""
-Vista que va a exportar los datos actuales de la 
-votación a un informe PDF.
-"""
 
 def exportarVotos(request, id_pregunta):
     """
-    q = get_object_or_404(Pregunta, pk = id_pregunta)
-
-    bff = io.BytesIO()
-
-    pdf = canvas.Canvas(bff, A4)
-    texto = pdf.beginText()
-
-    texto.setTextOrigin(inch, inch*4.5)
-    texto.setFont("Helvetica-Bold", 24)
-    texto.textLine(q.texto_pregunta)
-
-    texto.setFont("Courier", 14)
-    texto.textLine()
-
-    for e in q.eleccion_set.all():
-        texto.textLine(e.texto_eleccion + '-' + str(e.votos))    
-
-    pdf.drawText(texto)
-
-    pdf.showPage()
-    pdf.save()
-
-    
-    # return FileResponse(generaInformeResultado(q), as_attachment=True, filename='reporte_resultados_pregunta_' + str(q.pk) + '.pdf')
-    return FileResponse(bff, as_attachment=True, filename='reporte_resultados_pregunta_' + str(q.pk) + '.pdf')
+    Vista que va a exportar los datos actuales de la 
+    votación a un informe PDF.
     """
+    # Obtengo el objeto Pregunta del cual obtenemos la información.
     q = get_object_or_404(Pregunta, pk = id_pregunta)
     
     # Se crea un objeto HttpResponse con los encabezados PDF.
@@ -153,24 +125,6 @@ def exportarVotos(request, id_pregunta):
 
     # Se construye el objeto PDF, utilizando el objeto respuesta como archivo.
     # Librería de generación de PDFs: ReportLab.
-    pdf = canvas.Canvas(response)
-    pdf.translate(inch, inch)
-    texto = pdf.beginText()
-
-    texto.setTextOrigin(inch, inch)
-    texto.setFont("Helvetica-Bold", 24)
-    texto.textLine(q.texto_pregunta)
-
-    texto.setFont("Courier", 14)
-    texto.textLine()
-
-    for e in q.eleccion_set.all():
-        texto.textLine(e.texto_eleccion + ' - ' + str(e.votos) + ' votos.')    
-
-    pdf.drawText(texto)
-
-    # Ya construido el objeto, se cierra y devuelve.
-    pdf.showPage()
-    pdf.save()
-
+    pdf = generaInformeResultado(q, response)
+    
     return response
